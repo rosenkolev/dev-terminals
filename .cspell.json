@@ -16,7 +16,8 @@
 		"Menees",
 		"snupkg",
 		"msbuild",
-		"stylecop"
+		"stylecop",
+		"inprocess"
 	  ]
     },
   ],

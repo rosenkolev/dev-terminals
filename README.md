@@ -1,11 +1,11 @@
-# DevOps Terminal
+# Dev Terminals
 
-[![Nuget downloads](https://img.shields.io/nuget/v/devops.terminal.svg)](https://www.nuget.org/packages/DevOps.Terminal/)
-[![Nuget](https://img.shields.io/nuget/dt/devops.terminal)](https://www.nuget.org/packages/DevOps.Terminal/)
-[![Build status](https://github.com/rosenkolev/devops-terminal/actions/workflows/github-actions.yml/badge.svg)](https://github.com/rosenkolev/devops-terminal/actions/workflows/github-actions.yml)
-[![spell check](https://github.com/rosenkolev/devops-terminal/actions/workflows/spell-check.yml/badge.svg)](https://github.com/rosenkolev/devops-terminal/actions/workflows/spell-check.yml)
-[![coverage](https://codecov.io/gh/rosenkolev/devops-terminal/branch/main/graph/badge.svg?token=V9E0GSDN34)](https://codecov.io/gh/rosenkolev/devops-terminal)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rosenkolev/devops-targets/blob/main/LICENSE)
+[![Nuget downloads](https://img.shields.io/nuget/v/dev.terminals.svg)](https://www.nuget.org/packages/Dev.Terminals/)
+[![Nuget](https://img.shields.io/nuget/dt/dev.terminals)](https://www.nuget.org/packages/Dev.Terminals/)
+[![Build status](https://github.com/rosenkolev/dev-terminals/actions/workflows/github-actions.yml/badge.svg)](https://github.com/rosenkolev/dev-terminals/actions/workflows/github-actions.yml)
+[![spell check](https://github.com/rosenkolev/dev-terminals/actions/workflows/spell-check.yml/badge.svg)](https://github.com/rosenkolev/dev-terminals/actions/workflows/spell-check.yml)
+[![coverage](https://codecov.io/gh/rosenkolev/dev-terminals/branch/main/graph/badge.svg?token=V9E0GSDN34)](https://codecov.io/gh/rosenkolev/dev-terminals)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rosenkolev/dev-terminals/blob/main/LICENSE)
 
 
 **This is a wrapper of the native OS terminal that can execute many commands and track command result.**
@@ -82,7 +82,6 @@ Shell(
 **An InProcess terminal window that can execute multiple commands**
 
 ```csharp
-
 // The linux `/bin/sh` shell syntax
 var syntax = new UnixShSyntax();
 
