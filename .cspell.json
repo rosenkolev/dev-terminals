@@ -7,58 +7,34 @@
       "filename": "{*.cmd,*.cs,*.csproj}",
       "language": "en-US"
     },
-    {
-      "filename": "{.cspell.json,*.svg}",
-      "enabled": false
-    },
-    {
-      "filename": "*.csx",
+	{
+      "filename": "*.csproj",
       "words": [
-        "appsettings",
-        "sonarscanner",
-        "analyzers",
-        "owasp"
-      ]
-    }
+	    "netstandard",
+		"Rosen",
+		"Kolev",
+		"Menees",
+		"snupkg",
+		"msbuild",
+		"stylecop"
+	  ]
+    },
   ],
   "ignorePaths": [
     ".gitattributes",
     ".gitignore",
     ".editorconfig",
-    "*.{png,jpg,pdf}",
-    "**/*.ruleset",
+	".cspell.json",
+	"Menees.Analyzers.Settings.xml",
+    "*.{png,jpg,pdf,svg}",
     "**/bin/**",
     "**/obj/**",
     "**/TestResults/**",
-    "**/launchSettings.json"
+    "**/launchSettings.json",
+	"**/Properties/IsExternalInit.cs"
   ],
   "words": [
     "cref",
-    "msbuild",
-    "analyzer",
-    "analizers",
-    "ruleset",
-    "netcoreapp",
-    "netstandard",
-    "stylecop",
-    "sonarlint",
-    "nuget",
-    "nupkg",
-    "snupkg",
-    "menees",
-    "codecov",
-    "LINQ",
-    "NOLOGO",
-
-    "arity",
-    "setx",
-    "rosen",
-    "kolev",
-    "sonarqube",
-    "cobertura",
-    "newtonsoft",
-    "jabba",
-    "dotnetsay",
-    "USERPROFILE"
+	"Analyzers"
   ]
 }

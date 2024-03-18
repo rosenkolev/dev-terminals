@@ -38,6 +38,8 @@ public class Command : IDisposable
     /// <summary>Gets a value indicating whether this command has exited.</summary>
     public bool HasExited => Process.HasExited;
 
+    public bool IsRunning { get; private set; }
+
     /// <summary>Gets the text output.</summary>
     public string? TextOutput => Logger.FindOutput<TextOutput>()?.Logger.Output;
 
@@ -92,12 +94,37 @@ public class Command : IDisposable
         return command;
     }
 
+    /// <summary>Starts the specified command.</summary>
+    public void Start()
+    {
+        var info = Process.StartInfo;
+        Log($"{info.FileName} {info.Arguments}", LogLevel.Debug);
+
+        if (Process.Start())
+        {
+            if (Process.StartInfo.RedirectStandardOutput)
+            {
+                Process.BeginOutputReadLine();
+            }
+
+            if (Process.StartInfo.RedirectStandardError)
+            {
+                Process.BeginErrorReadLine();
+            }
+
+            IsRunning = true;
+        }
+
+        Log("----------------------", Logger.LogLevel);
+    }
+
     /// <summary>Closes the specified command.</summary>
     public void Close()
     {
-        if (!Process.HasExited)
+        if (IsRunning && !Process.HasExited)
         {
             Process.Close();
+            IsRunning = Process.IsRunning();
         }
     }
 
@@ -125,8 +152,12 @@ public class Command : IDisposable
         if (disposing)
         {
             Close();
-            Process.ErrorDataReceived -= Logger.LogError;
-            Process.OutputDataReceived -= Logger.LogOutput;
+            if (IsRunning)
+            {
+                Process.ErrorDataReceived -= Logger.LogError;
+                Process.OutputDataReceived -= Logger.LogOutput;
+            }
+
             Process.Dispose();
         }
     }

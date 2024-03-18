@@ -8,7 +8,7 @@ namespace DevOps.Commands;
 /// <summary>Exit code is not valid exception.</summary>
 [Serializable]
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-[SuppressMessage("", "CA1032", Justification = "Skip standard exeption constructors.")]
+[SuppressMessage("", "CA1032", Justification = "Skip standard exception constructors.")]
 public sealed class ExitCodeException : Exception, ISerializable
 {
     /// <summary>Initializes a new instance of the <see cref="ExitCodeException"/> class.</summary>

@@ -13,7 +13,7 @@ namespace DevOps;
 /// <summary>A facade for terminal operations.</summary>
 public static class TerminalFacade
 {
-    private static Terminal? _defaulInstance;
+    private static Terminal? _defaultInstance;
 
     /// <summary>Gets the default terminal syntax.</summary>
     public static TerminalCommandSyntax DefaultTerminalSyntax =>
@@ -26,14 +26,14 @@ public static class TerminalFacade
     {
         get
         {
-            _defaulInstance ??= CreateDefaultTerminal();
-            return _defaulInstance;
+            _defaultInstance ??= CreateDefaultTerminal();
+            return _defaultInstance;
         }
 
         set
         {
-            _defaulInstance?.Close();
-            _defaulInstance = value;
+            _defaultInstance?.Close();
+            _defaultInstance = value;
         }
     }
 

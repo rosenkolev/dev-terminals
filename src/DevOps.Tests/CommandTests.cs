@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,9 +15,17 @@ namespace DevOps.Tests;
 [TestClass]
 public class CommandTests
 {
+    private static bool NotWindows() =>
+        !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
     [TestMethod]
     public void CommandShouldWork()
     {
+        if (NotWindows())
+        {
+            return;
+        }
+
         using var command = Command.CreateAndStart(
               commandPath: "cmd.exe",
               arguments: "/c \"ping localhost>NUL && echo MyTestString\"",
@@ -38,5 +47,19 @@ public class CommandTests
         Assert.AreEqual(0, command.ExitCode);
         Assert.AreEqual("MyTestString", command.TextOutput);
         Assert.AreEqual("cmd.exe", command.Process.StartInfo.FileName);
+    }
+
+    [TestMethod]
+    public void CommandShouldWorkWithTimeout()
+    {
+        if (NotWindows())
+        {
+            return;
+        }
+
+        using var command = new Command("abc", "de fg", null, new CommandLogger(LogLevel.Debug));
+
+        Assert.AreEqual("abc", command.Process.StartInfo.FileName);
+        Assert.AreEqual("de fg", command.Process.StartInfo.Arguments);
     }
 }

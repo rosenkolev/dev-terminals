@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 using DevOps.Loggers.Abstraction;
 
@@ -50,30 +51,22 @@ public static class CommandExtensions
             : null;
     }
 
-    /// <summary>Starts the specified command.</summary>
-    public static void Start(this Command command)
+    public static bool IsRunning(this Process process)
     {
-        if (command == null)
+        if (process == null)
         {
-            throw new ArgumentNullException(nameof(command));
+            throw new ArgumentNullException(nameof(process));
         }
 
-        var info = command.Process.StartInfo;
-        command.Log($"{info.FileName} {info.Arguments}", LogLevel.Debug);
-
-        if (command.Process.Start())
+        try
         {
-            if (command.Process.StartInfo.RedirectStandardOutput)
-            {
-                command.Process.BeginOutputReadLine();
-            }
-
-            if (command.Process.StartInfo.RedirectStandardError)
-            {
-                command.Process.BeginErrorReadLine();
-            }
+            Process.GetProcessById(process.Id);
+        }
+        catch (ArgumentException)
+        {
+            return false;
         }
 
-        command.Log("----------------------", command.Logger.LogLevel);
+        return true;
     }
 }

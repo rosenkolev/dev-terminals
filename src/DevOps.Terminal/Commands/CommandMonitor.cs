@@ -31,7 +31,7 @@ public class CommandMonitor
     {
         if (string.IsNullOrEmpty(endMonitorWildcard))
         {
-            throw new ArgumentException("End monitoring whildcard is required", nameof(endMonitorWildcard));
+            throw new ArgumentException("End monitoring wildcard is required", nameof(endMonitorWildcard));
         }
 
         OutputMessage output;

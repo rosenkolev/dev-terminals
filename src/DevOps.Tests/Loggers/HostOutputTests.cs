@@ -24,7 +24,7 @@ namespace DevOps.Tests.Loggers
                 new HostOutputFormatter(new HostPalette(), prefix, offset, !color));
 
         [TestMethod]
-        public void HostOutput_ShoudWriteOneLine_WithNoColorNoPrefix()
+        public void HostOutput_ShouldWriteOneLine_WithNoColorNoPrefix()
         {
             using var stream = MemoryTextStream.Create();
             var output = CreateOutput(string.Empty, LogLevel.Info, offset: 1, color: false, stream.Writer);
@@ -39,7 +39,7 @@ namespace DevOps.Tests.Loggers
 
 
         [TestMethod]
-        public void HostOutput_ShoudWriteManyLine_WithNoColorNoPrefix()
+        public void HostOutput_ShouldWriteManyLine_WithNoColorNoPrefix()
         {
             using var stream = MemoryTextStream.Create();
             var output = CreateOutput(string.Empty, LogLevel.Info, offset: 1, color: false, stream.Writer);
@@ -55,7 +55,7 @@ namespace DevOps.Tests.Loggers
         }
 
         [TestMethod]
-        public void HostOutput_ShoudWrite_WithPrefixNoColor()
+        public void HostOutput_ShouldWrite_WithPrefixNoColor()
         {
             using var stream = MemoryTextStream.Create();
             var output = CreateOutput("test", LogLevel.Info, offset: 1, color: false, stream.Writer);
@@ -80,7 +80,7 @@ namespace DevOps.Tests.Loggers
         }
 
         [TestMethod]
-        public void HostOutput_ShoudWrite_WithPrefixColor()
+        public void HostOutput_ShouldWrite_WithPrefixColor()
         {
             using var stream = MemoryTextStream.Create();
             var output = CreateOutput("Z", LogLevel.Info, offset: 1, color: true, stream.Writer);

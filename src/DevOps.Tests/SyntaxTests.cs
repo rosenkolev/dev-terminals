@@ -1,4 +1,5 @@
-﻿
+﻿// cspell:ignore errorlevel
+
 using DevOps.Terminals.Syntax;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
