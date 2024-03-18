@@ -58,8 +58,13 @@ Console.WriteLine(command.HasExited); // true
 
 ### Shell
 
+**A shell helper methods to quickly execute commands**
+
 ```csharp
-using static DevOps.TerminalFacade;
+using static Dev.Terminals.TerminalFacade;
+
+// Execute a string command in the default system shell
+Shell("ping localhost");
 
 // Execute a command in the default system shell
 Shell(
@@ -67,10 +72,32 @@ Shell(
 
 // Execute several command in the default system shell
 Shell(
-	TerminalCommand.Cd("/src") &&
-	TerminalCommand.CreateParse("ls .") &&
-	TerminalCommand.CreateParse("ping ..."));
+  TerminalCommand.Cd("/src") &&
+  TerminalCommand.CreateParse("ls .") &&
+  TerminalCommand.CreateParse("ping ..."));
+```
 
-// Execute a string command in the default system shell
-Shell("ping localhost");
+### Terminal
+
+**An InProcess terminal window that can execute multiple commands**
+
+```csharp
+
+// The linux `/bin/sh` shell syntax
+var syntax = new UnixShSyntax();
+
+// The windows `cmd.exe` shell syntax
+var syntax = new WindowsCmdSyntax();
+
+// Select one of the above depending on the OS
+var currentOsSyntax = TerminalFacade.DefaultTerminalSyntax;
+
+// create a terminal as the system default shell
+var terminal = new Terminal(currentOsSyntax, consoleLogLevel: LogLevel.Verbose, workingDirectory: "c:\\");
+
+// execute command
+var result = terminal.Exec(TerminalCommand.CreateParse("ping localhost"));
+
+// async execute command
+var result2 = await terminal.ExecAsync(TerminalCommand.CreateParse("ping localhost"));
 ```

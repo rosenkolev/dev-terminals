@@ -30,10 +30,10 @@ jobs:
           slug: rosenkolev/devops-terminal
           files: TestResults/coverage.opencover.xml
       - name: Create the Terminal package with symbols
-        run: dotnet pack --no-restore --configuration Release src/DevOps.Terminal/DevOps.Terminal.csproj --include-symbols
+        run: dotnet pack --no-restore --configuration Release src/Dev.Terminal/Dev.Terminal.csproj --include-symbols
       - name: Clear nupkg packages for another build with README
         run: rm src/*/bin/Release/*.nupkg
       - name: Create the Terminal package with README
-        run: dotnet pack --no-restore --configuration Release src/DevOps.Terminal/DevOps.Terminal.csproj -p:PACK_README=true
+        run: dotnet pack --no-restore --configuration Release src/Dev.Terminal/Dev.Terminal.csproj -p:PACK_README=true
       - name: Publish the Terminal package to nuget.org
-        run: dotnet nuget push src/DevOps.Terminal/bin/Release/*.nupkg --skip-duplicate -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push src/Dev.Terminal/bin/Release/*.nupkg --skip-duplicate -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
