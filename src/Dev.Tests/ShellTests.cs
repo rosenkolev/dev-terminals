@@ -84,7 +84,7 @@ public class ShellTests
             "echo " + _terminal.Syntax.CurrentDirectoryCodeCommand,
             new ShellOptions { WorkingDirectory = path });
 
-        Assert.AreEqual(path.Trim('/', '\\'), result.Output);
+        Assert.AreEqual(path.TrimEnd('/', '\\'), result.Output);
     }
 
     [TestMethod]

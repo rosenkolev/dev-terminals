@@ -5,6 +5,7 @@
 [![coverage](https://codecov.io/gh/rosenkolev/dev-terminals/branch/main/graph/badge.svg?token=V9E0GSDN34)](https://codecov.io/gh/rosenkolev/dev-terminals)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rosenkolev/dev-terminals/blob/main/LICENSE)
 
+<!-- cspell:ignore Rosen,Kolev,MYVAR -->
 <center>
 
   # Dev Terminals
@@ -64,7 +65,7 @@ dotnet add package Dev.Terminals
 ### Shell
 
 The `Shells` class provide static methods for quick start and easy usage.
-The class provides singleton instance of a Terminal, that can be overriden.
+The class provides singleton instance of a Terminal, that can be overridden.
 
 **NOTE:** Use the `using static Dev.Terminals.Shell` to easily access the static methods.
 
@@ -179,7 +180,7 @@ var result2 = await terminal.ExecuteAsync(
 
 ## Contributing
 
-The library is open for contribution by the comunity.
+The library is open for contribution by the community.
 
 ### File Structure
 
@@ -205,4 +206,4 @@ Distributed under MIT License. See `LICENSE.txt` for more information.
 
 ## Contact
 
-Rosen Kolev - email@example.com
+Rosen Kolev - rosen.kolev@hotmail.com
