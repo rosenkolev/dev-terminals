@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Dev.Terminals;
-
 namespace Dev.Terminals.Syntax;
 
 /// <summary>The windows cmd.exe syntax.</summary>
@@ -26,6 +24,9 @@ public class WindowsCmdSyntax : TerminalCommandSyntax
 
     /// <inheritdoc/>
     public override string ReturnCodeCommand => "%errorlevel%";
+
+    /// <inheritdoc/>
+    public override string CurrentDirectoryCodeCommand => "%cd%";
 
     /// <inheritdoc/>
     public override string BuildCommand(string[] arguments) =>

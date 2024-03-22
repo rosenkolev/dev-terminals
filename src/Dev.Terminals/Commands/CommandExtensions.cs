@@ -62,7 +62,7 @@ public static class CommandExtensions
         {
             Process.GetProcessById(process.Id);
         }
-        catch (ArgumentException)
+        catch (InvalidOperationException)
         {
             return false;
         }

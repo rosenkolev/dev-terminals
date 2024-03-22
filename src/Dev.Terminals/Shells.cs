@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-using Dev.Terminals.Syntax;
 using Dev.Terminals.Commands;
 using Dev.Terminals.Loggers;
 using Dev.Terminals.Loggers.Abstraction;
 using Dev.Terminals.Syntax;
 
+using static Dev.Terminals.TerminalCommandFactory;
+
 namespace Dev.Terminals;
 
 /// <summary>A facade for terminal operations.</summary>
-public static class TerminalFacade
+public static class Shells
 {
     private static Terminal? _defaultInstance;
 
@@ -39,17 +40,40 @@ public static class TerminalFacade
 
     /// <summary>Execute a shell command.</summary>
     public static CommandResult Shell(string command) =>
-        DefaultTerminal.Exec(TerminalCommand.CreateParse(command, null));
+        DefaultTerminal.Execute(Parse(command, logLevel: null, onComplete: null));
 
     /// <summary>Execute a shell command.</summary>
-    public static CommandResult Shell(string command, string workingDirectory) =>
-        DefaultTerminal.Exec(
-            TerminalCommand.Cd(workingDirectory) &
-            TerminalCommand.CreateParse(command, null));
+    public static CommandResult Shell(string command, ShellOptions options)
+    {
+        if (options == null)
+        {
+            return Shell(command);
+        }
+
+        var currentIsHostOutputEnabled = DefaultTerminal.IsHostOutputEnabled;
+        string? currentWorkingDirectory = null;
+
+        DefaultTerminal.IsHostOutputEnabled = options.AutoHostOutput;
+        if (options.WorkingDirectory != null)
+        {
+            currentWorkingDirectory = DefaultTerminal.CurrentDirectory;
+            Shell(Cd(options.WorkingDirectory));
+        }
+
+        try
+        {
+            return Shell(Parse(command, options.LogLevel, null));
+        }
+        finally
+        {
+            DefaultTerminal.IsHostOutputEnabled = currentIsHostOutputEnabled;
+            SafeCd(currentWorkingDirectory!);
+        }
+    }
 
     /// <summary>Execute a shell command.</summary>
     public static CommandResult Shell(TerminalCommand command) =>
-        DefaultTerminal.Exec(command);
+        DefaultTerminal.Execute(command);
 
     /// <summary>Creates the default terminal.</summary>
     public static Terminal CreateDefaultTerminal(
@@ -76,7 +100,7 @@ public static class TerminalFacade
 
         var logger = new CommandLogger(logLevel);
         var consoleOutput = Command.CreateConsoleOutput(logLevel, logPrefix, 1, noColor);
-        var monitor = new TerminalMonitor(logger, new TextOutput(), consoleOutput);
+        var monitor = new TerminalMonitor(new TextOutput(), consoleOutput);
         var processStartInfo = ProcessStartInfoFactory.Create(
             terminalSyntax.CommandName,
             string.Empty,
@@ -94,5 +118,13 @@ public static class TerminalFacade
         var terminal = new Terminal(terminalSyntax, monitor, command);
 
         return terminal;
+    }
+
+    private static void SafeCd(string? workingDirectory)
+    {
+        if (workingDirectory != null)
+        {
+            DefaultTerminal.Execute(Cd(workingDirectory));
+        }
     }
 }

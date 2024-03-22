@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Dev.Terminals.Commands;
@@ -11,12 +13,14 @@ using Dev.Terminals.Loggers.Abstraction;
 namespace Dev.Terminals;
 
 /// <summary>A generic terminal control.</summary>
-public class Terminal
+public class Terminal : IDisposable
 {
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly Command _command;
     private readonly LogLevel _consoleLogLevel;
     private readonly TerminalMonitor _monitor;
-    private readonly TerminalCommandSyntax _syntax;
+    private readonly int _maxTimeoutInMilliseconds = 3600000; // 1h
+    private bool _disposed;
 
     /// <summary>Initializes a new instance of the <see cref="Terminal"/> class.</summary>
     public Terminal(TerminalCommandSyntax syntax, LogLevel consoleLogLevel, string? workingDirectory)
@@ -28,7 +32,7 @@ public class Terminal
     public Terminal(TerminalCommandSyntax syntax, CommandLogger commandLogger, string? workingDirectory)
         : this(
               syntax,
-              new TerminalMonitor(commandLogger),
+              new TerminalMonitor(commandLogger!.LogLevel),
               CreateCommand(syntax, workingDirectory, commandLogger))
     {
     }
@@ -36,11 +40,14 @@ public class Terminal
     /// <summary>Initializes a new instance of the <see cref="Terminal"/> class.</summary>
     public Terminal(TerminalCommandSyntax syntax, TerminalMonitor monitor, Command command)
     {
-        _syntax = syntax ?? throw new ArgumentNullException(nameof(syntax));
         _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
         _command = command ?? throw new ArgumentNullException(nameof(command));
 
-        _consoleLogLevel = monitor.LogLevel;
+        Syntax = syntax ?? throw new ArgumentNullException(nameof(syntax));
+
+        _consoleLogLevel = command.Logger.LogLevel;
+
+        _monitor.SetCommandLogger(command.Logger);
 
         _command.Process.StartInfo.RedirectStandardInput = true;
         _command.Start();
@@ -51,6 +58,30 @@ public class Terminal
 
     /// <summary>Gets the monitor.</summary>
     public TerminalMonitor Monitor => _monitor;
+
+    /// <summary>Gets or sets the log level.</summary>
+    public LogLevel LogLevel
+    {
+        get => Command.Logger.LogLevel;
+        set => Command.Logger.LogLevel = value;
+    }
+
+    /// <summary>Gets or sets a value indicating whether host output is enabled.</summary>
+    public bool IsHostOutputEnabled
+    {
+        get => _monitor.HostOutput.Enabled;
+        set => _monitor.HostOutput.Enabled = value;
+    }
+
+    /// <summary>Gets the terminal syntax.</summary>
+    public TerminalCommandSyntax Syntax { get; init; }
+
+    /// <summary>Gets the current directory.</summary>
+    public string CurrentDirectory =>
+        ExecuteCommand(
+            TerminalCommandFactory.Parse("echo " + Syntax.CurrentDirectoryCodeCommand, LogLevel.Debug, null))
+        .Output
+        .Trim();
 
     /// <summary>Creates a command.</summary>
     public static Command CreateCommand(
@@ -70,106 +101,102 @@ public class Terminal
             logger);
     }
 
-    /// <summary>Executes the specified command.</summary>
-    public CommandResult Exec(TerminalCommand command)
-    {
-        if (command == null)
-        {
-            throw new ArgumentNullException(nameof(command));
-        }
-
-        return command.HasNext
-            ? ExecPipe(command)
-            : ExecuteCommand(command.Info);
-    }
-
     /// <summary>Executes the specified command in an async task.</summary>
-    public Task<CommandResult> ExecAsync(TerminalCommand command) =>
-        Task.Run(() => Exec(command));
+    public Task<CommandResult> ExecuteAsync(TerminalCommand command) =>
+        Task.Run(() => Execute(command));
 
     /// <summary>Executes the specified command.</summary>
-    public CommandResult ExecPipe(TerminalCommand command)
+    public CommandResult Execute(TerminalCommand command)
     {
         if (command == null)
         {
             throw new ArgumentNullException(nameof(command));
         }
 
-        var builder = new StringBuilder();
+        _semaphore.Wait(_maxTimeoutInMilliseconds);
+
         CommandResult? result = null;
-        var currentCommand = command;
-        do
+        try
         {
-            if (result != null)
+            if (!command.HasNext)
             {
-                builder.AppendLine();
+                result = ExecuteCommand(command);
             }
+            else
+            {
+                var builder = new StringBuilder();
+                var currentCommand = command;
+                do
+                {
+                    if (result != null)
+                    {
+                        builder.AppendLine();
+                    }
 
-            result = ExecuteCommand(currentCommand!.Info);
-            builder.Append(result.Output);
-            currentCommand = command.GetNext();
+                    result = ExecuteCommand(currentCommand);
+                    builder.Append(result.Output);
+                    currentCommand = currentCommand.MoveNextAndReleasePointers();
+                }
+                while (result.ExitCode == 0 && currentCommand != null);
+
+                result = new CommandResult(builder.ToString(), result.ExitCode);
+            }
         }
-        while (result.ExitCode == 0 && currentCommand != null);
-
-        return new CommandResult(builder.ToString(), result.ExitCode);
-    }
-
-    /// <summary>Closes this terminal.</summary>
-    public void Close()
-    {
-        _command.Dispose();
-    }
-
-    /// <summary>Executes the command.</summary>
-    public CommandResult ExecuteCommand(
-        string[] arguments,
-        LogLevel? logLevel,
-        bool raw = false) =>
-        ExecuteCommand(new TerminalCommandExecuteInfo { CommandArguments = arguments, LogLevel = logLevel }, raw);
-
-    /// <summary>Executes the command.</summary>
-    public CommandResult ExecuteCommand(
-        TerminalCommandExecuteInfo info,
-        bool raw = false)
-    {
-        if (info == null)
+        finally
         {
-            throw new ArgumentNullException(nameof(info));
+            _semaphore.Release();
         }
-
-        _monitor.SetLogLevel(info.LogLevel ?? _command.Logger.LogLevel);
-
-        var result = raw ?
-            Execute(new TerminalExecution(string.Join(" ", info.CommandArguments))) :
-            Execute(info.CommandArguments);
-
-        _monitor.Reset();
-        _monitor.SetLogLevel(_consoleLogLevel);
-
-        info.OnComplete?.Invoke(result);
 
         return result;
     }
 
-    /// <summary>Executes the command.</summary>
-    internal CommandResult Execute(params string[] commandArguments)
+    /// <summary>Closes this terminal.</summary>
+    public void Close() =>
+        Dispose();
+
+    /// <inheritdoc/>
+    public void Dispose()
     {
-        var commandText = _syntax.BuildCommand(commandArguments);
-        return Execute(new TerminalExecution(commandText));
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>Executes the command.</summary>
-    internal CommandResult Execute(TerminalExecution execution)
+    internal CommandResult ExecuteCommand(
+        TerminalCommand context)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        LogLevel = context.LogLevel ?? LogLevel;
+
+        var rawCommandText = context.RawInput ?
+            string.Join(" ", context.CommandArguments) :
+            Syntax.BuildCommand(context.CommandArguments);
+
+        var result = ExecuteRunUnit(new TerminalCommandRunUnit(rawCommandText));
+
+        LogLevel = _consoleLogLevel;
+
+        context.OnComplete?.Invoke(result);
+
+        return result;
+    }
+
+    /// <summary>Runs a single command in the terminal.</summary>
+    internal CommandResult ExecuteRunUnit(TerminalCommandRunUnit execution)
     {
         _monitor.WriteHostLine(execution.Command, LogLevel.Debug);
 
         var prefix = execution.Prefix;
-        var statusCodeCommand = "echo " + prefix + _syntax.ReturnCodeCommand;
+        var statusCodeCommand = "echo " + prefix + Syntax.ReturnCodeCommand;
 
         _command.Process.StandardInput.WriteLine(execution.Command);
         _command.Process.StandardInput.WriteLine(statusCodeCommand);
 
-        var skipLines = _syntax.BuildInputClearWildCards(execution.Command, statusCodeCommand).ToArray();
+        var skipLines = Syntax.BuildInputClearWildCards(execution.Command, statusCodeCommand).ToArray();
         var outputResult = _monitor.WaitForResult(prefix + '*', skipLines);
         var code = outputResult[prefix.Length..];
         var statusCode = Convert.ToInt32(code, CultureInfo.InvariantCulture);
@@ -177,7 +204,23 @@ public class Terminal
         var result = new CommandResult(output, statusCode);
 
         _monitor.WriteHostLine("Exit code " + code, LogLevel.Debug);
+        _monitor.Reset();
 
         return result;
+    }
+
+    /// <summary>Dispose the resources.</summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _command.Dispose();
+                _semaphore.Dispose();
+            }
+
+            _disposed = true;
+        }
     }
 }

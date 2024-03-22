@@ -11,15 +11,21 @@ public sealed class TextOutput : IOutput
     public TextOutputLogger Logger { get; private set; } = new TextOutputLogger();
 
     /// <inheritdoc/>
+    public bool Enabled { get; set; } = true;
+
+    /// <inheritdoc/>
     public void Write(string message, LogLevel logLevel)
     {
-        if (logLevel == LogLevel.Error)
+        if (Enabled)
         {
-            Logger.LogError(message);
-        }
-        else
-        {
-            Logger.LogMessage(message);
+            if (logLevel == LogLevel.Error)
+            {
+                Logger.LogError(message);
+            }
+            else
+            {
+                Logger.LogMessage(message);
+            }
         }
     }
 

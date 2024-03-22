@@ -19,6 +19,9 @@ public class UnixShSyntax : TerminalCommandSyntax
     public override string ReturnCodeCommand => "$?";
 
     /// <inheritdoc/>
+    public override string CurrentDirectoryCodeCommand => "$PWD";
+
+    /// <inheritdoc/>
     public override string BuildCommand(string[] arguments) =>
         CreateArgumentString(arguments, AppendArgument);
 

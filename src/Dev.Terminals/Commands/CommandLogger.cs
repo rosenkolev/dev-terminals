@@ -30,6 +30,11 @@ public class CommandLogger : ICommandLogger
         Outputs.ForEach(l => l.WriteLine(e.Data, LogLevel.Error));
 
     /// <inheritdoc/>
-    public void Add(IOutput output) =>
-        Outputs.Add(output);
+    public void Add(IOutput output)
+    {
+        if (!Outputs.Contains(output))
+        {
+            Outputs.Add(output);
+        }
+    }
 }

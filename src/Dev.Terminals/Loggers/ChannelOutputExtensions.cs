@@ -1,30 +1,16 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-using Dev.Terminals.Loggers;
 using Dev.Terminals.Loggers.Abstraction;
 
-namespace Dev.Terminals.Commands;
+namespace Dev.Terminals.Loggers;
 
-/// <summary>A command output monitor.</summary>
-public class CommandMonitor
+/// <summary>Channel output extensions.</summary>
+internal static class ChannelOutputExtensions
 {
-    private readonly ChannelOutput _channelOutput;
-
-    /// <summary>Initializes a new instance of the <see cref="CommandMonitor"/> class.</summary>
-    public CommandMonitor(ICommandLogger commandLogger)
-    {
-        if (commandLogger == null)
-        {
-            throw new ArgumentNullException(nameof(commandLogger));
-        }
-
-        _channelOutput = new ChannelOutput();
-        commandLogger.Add(_channelOutput);
-    }
-
     /// <summary>Waits for exit result.</summary>
-    public string WaitForResult(
+    public static string WaitForWildcard(
+        this ChannelOutput channelOutput,
         string endMonitorWildcard,
         string[] skipLinesWildcards,
         Action<OutputMessage> onRead)
@@ -38,7 +24,7 @@ public class CommandMonitor
         string message;
         do
         {
-            output = _channelOutput.WaitAndRead();
+            output = channelOutput.WaitAndRead();
             message = TrimEnd(output.Message, Environment.NewLine);
             if (string.IsNullOrEmpty(message))
             {
@@ -64,7 +50,7 @@ public class CommandMonitor
     }
 
     /// <summary>Trim a string from the end.</summary>
-    protected static string TrimEnd([NotNull] string input, [NotNull] string value) =>
+    public static string TrimEnd([NotNull] this string input, [NotNull] string value) =>
             input.EndsWith(value, StringComparison.InvariantCulture) ?
             input[..^value.Length] :
             input;

@@ -9,30 +9,45 @@ namespace Dev.Terminals.Loggers.Host;
 /// <summary>A host writer class.</summary>
 public sealed class HostOutput : IOutput
 {
-    private readonly TextWriter _writer;
     private readonly LogLevel _maxLogLevel;
-    private readonly HostOutputFormatter _formatter;
     private bool _isLineStart = true;
-
-    /// <summary>Initializes a new instance of the <see cref="HostOutput"/> class.</summary>
-    public HostOutput(TextWriter writer, HostPalette palette, string prefix, LogLevel maxLogLevel)
-        : this(writer, maxLogLevel, new HostOutputFormatter(palette, prefix))
-    {
-    }
 
     /// <summary>Initializes a new instance of the <see cref="HostOutput"/> class.</summary>
     public HostOutput(TextWriter writer, LogLevel maxLogLevel, HostOutputFormatter formatter)
     {
-        _writer = writer;
+        Writer = writer;
+        Formatter = formatter;
         _maxLogLevel = maxLogLevel;
-        _formatter = formatter;
     }
+
+    /// <inheritdoc/>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>Gets the text writer stream.</summary>
+    internal TextWriter Writer { get; init; }
+
+    /// <summary>Gets the text formatter.</summary>
+    internal HostOutputFormatter Formatter { get; init; }
+
+    /// <summary>Creates a new instance of the <see cref="HostOutput"/> class.</summary>
+    public static HostOutput Create(
+        TextWriter writer,
+        LogLevel logLevel,
+        HostPalette palette,
+        string hostPrefix,
+        int offsetRation,
+        bool noColor) =>
+        new HostOutput(
+            writer,
+            logLevel,
+            new HostOutputFormatter(palette, hostPrefix, offsetRation, noColor));
 
     /// <summary>Writes the specified message.</summary>
     public void Write(string message, LogLevel logLevel)
     {
         if (logLevel > _maxLogLevel ||
-            string.IsNullOrEmpty(message))
+            string.IsNullOrEmpty(message) ||
+            !Enabled)
         {
             return;
         }
@@ -66,8 +81,11 @@ public sealed class HostOutput : IOutput
     /// <summary>Writes a new line.</summary>
     public void WriteLine()
     {
-        _writer.WriteLine();
-        _isLineStart = true;
+        if (Enabled)
+        {
+            Writer.WriteLine();
+            _isLineStart = true;
+        }
     }
 
     private static string CleanUp(string message) => message
@@ -78,13 +96,13 @@ public sealed class HostOutput : IOutput
         .Replace("\u001B[96m", string.Empty, StringComparison.Ordinal);
 
     private void AppendMessage(string message, LogLevel logLevel) =>
-        _writer.Write(_formatter.FormatMessage(message, logLevel));
+        Writer.Write(Formatter.FormatMessage(message, logLevel));
 
     private void WriteLineStart(LogLevel logLevel)
     {
         if (_isLineStart)
         {
-            _writer.Write(_formatter.GetLinePrefix(logLevel));
+            Writer.Write(Formatter.GetLinePrefix(logLevel));
             _isLineStart = false;
         }
     }

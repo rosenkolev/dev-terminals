@@ -16,6 +16,9 @@ public abstract class TerminalCommandSyntax
     /// <summary>Gets the return code command.</summary>
     public abstract string ReturnCodeCommand { get; }
 
+    /// <summary>Gets the current directory code command.</summary>
+    public abstract string CurrentDirectoryCodeCommand { get; }
+
     /// <summary>Builds the command.</summary>
     public abstract string BuildCommand(string[] arguments);
 

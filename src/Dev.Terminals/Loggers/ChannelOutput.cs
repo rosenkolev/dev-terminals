@@ -10,6 +10,9 @@ namespace Dev.Terminals.Loggers;
 /// <summary>A channel/pipe output.</summary>
 public class ChannelOutput : IOutput, IInput
 {
+    /// <inheritdoc/>
+    public bool Enabled => true;
+
     /// <summary>Gets the logger.</summary>
     [MemberNotNull]
     internal ScopeLogger Logger { get; private set; } = new ScopeLogger();

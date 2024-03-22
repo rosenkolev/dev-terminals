@@ -8,31 +8,28 @@ using Dev.Terminals.Loggers.Host;
 namespace Dev.Terminals;
 
 /// <summary>Command logger monitor.</summary>
-public sealed class TerminalMonitor : CommandMonitor
+/// <remarks>The terminal monitor implements the Decorator Design Pattern.</remarks>
+public sealed class TerminalMonitor
 {
-    private readonly CommandLogger _commandLogger;
+    private readonly ChannelOutput _channelOutput = new();
     private readonly HostOutput _hostOutput;
     private readonly TextOutput _textOutput;
     private readonly bool _trimLines;
 
     /// <summary>Initializes a new instance of the <see cref="TerminalMonitor"/> class.</summary>
-    public TerminalMonitor(CommandLogger commandLogger)
+    public TerminalMonitor(LogLevel hostLogLevel)
         : this(
-              commandLogger,
               new TextOutput(),
-              Command.CreateConsoleOutput(commandLogger?.LogLevel ?? LogLevel.Debug))
+              Command.CreateConsoleOutput(hostLogLevel))
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="TerminalMonitor"/> class.</summary>
     public TerminalMonitor(
-        CommandLogger commandLogger,
         TextOutput textOutput,
         HostOutput hostOutput,
         bool trimLines = true)
-        : base(commandLogger)
     {
-        _commandLogger = commandLogger;
         _textOutput = textOutput;
         _hostOutput = hostOutput;
         _trimLines = trimLines;
@@ -41,20 +38,23 @@ public sealed class TerminalMonitor : CommandMonitor
     /// <summary>Gets the output.</summary>
     public string Output => _textOutput.Logger.Output;
 
-    /// <summary>Gets or sets the log level.</summary>
-    public LogLevel LogLevel
-    {
-        get => _commandLogger.LogLevel;
-        set => _commandLogger.LogLevel = value;
-    }
+    /// <summary>Gets the host output.</summary>
+    public HostOutput HostOutput => _hostOutput;
 
-    /// <summary>Sets the log level.</summary>
-    public void SetLogLevel(LogLevel logLevel) =>
-        LogLevel = logLevel;
+    /// <summary>Sets the command logger.</summary>
+    public void SetCommandLogger(ICommandLogger commandLogger)
+    {
+        if (commandLogger == null)
+        {
+            throw new ArgumentNullException(nameof(commandLogger));
+        }
+
+        commandLogger.Add(_channelOutput);
+    }
 
     /// <summary>Waits for exit result.</summary>
     public string WaitForResult(string endMonitorWildcard, string[] skipLinesWildcards) =>
-        WaitForResult(endMonitorWildcard, skipLinesWildcards, WriteLine);
+        _channelOutput.WaitForWildcard(endMonitorWildcard, skipLinesWildcards, WriteLine);
 
     /// <summary>Writes the host line.</summary>
     public void WriteHostLine(string message, LogLevel logLevel) =>
@@ -66,7 +66,7 @@ public sealed class TerminalMonitor : CommandMonitor
 
     private void WriteLine(OutputMessage output)
     {
-        var message = _trimLines ? TrimEnd(output.Message, Environment.NewLine) : output.Message;
+        var message = _trimLines ? output.Message.TrimEnd(Environment.NewLine) : output.Message;
         _textOutput.WriteLine(message, output.Level);
         _hostOutput?.WriteLine(message, output.Level);
     }

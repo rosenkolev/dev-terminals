@@ -24,6 +24,21 @@ namespace Dev.Tests.Loggers
                 new HostOutputFormatter(new HostPalette(), prefix, offset, !color));
 
         [TestMethod]
+        public void HostOutput_ShouldNotWrite_WhenDisabled()
+        {
+            using var stream = MemoryTextStream.Create();
+            var output = CreateOutput(string.Empty, LogLevel.Info, offset: 0, color: false, stream.Writer);
+
+            output.Write("A", LogLevel.Info);
+            output.Enabled = false;
+            output.Write("B", LogLevel.Info);
+            output.Enabled = true;
+            output.Write("C", LogLevel.Info);
+
+            Assert.AreEqual($"AC", stream.GetText());
+        }
+
+        [TestMethod]
         public void HostOutput_ShouldWriteOneLine_WithNoColorNoPrefix()
         {
             using var stream = MemoryTextStream.Create();

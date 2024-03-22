@@ -1,12 +1,12 @@
 ﻿namespace Dev.Terminals;
 
 /// <summary>A terminal execution.</summary>
-internal class TerminalExecution
+internal class TerminalCommandRunUnit
 {
     private static uint globalIndex;
 
-    /// <summary>Initializes a new instance of the <see cref="TerminalExecution"/> class.</summary>
-    public TerminalExecution(string command)
+    /// <summary>Initializes a new instance of the <see cref="TerminalCommandRunUnit"/> class.</summary>
+    public TerminalCommandRunUnit(string command)
     {
 #pragma warning disable S3010
         Id = globalIndex++;

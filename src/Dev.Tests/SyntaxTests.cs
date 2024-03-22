@@ -4,31 +4,30 @@ using Dev.Terminals.Syntax;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Dev.Tests
+namespace Dev.Tests;
+
+[TestClass]
+public class SyntaxTests
 {
-    [TestClass]
-    public class SyntaxTests
+    [TestMethod]
+    public void UnixShShouldMatchParams()
     {
-        [TestMethod]
-        public void UnixShShouldMatchParams()
-        {
-            var syntax = new UnixShSyntax();
+        var syntax = new UnixShSyntax();
 
-            Assert.AreEqual("/bin/sh", syntax.CommandName);
-            Assert.AreEqual("-c \"{0}\"", syntax.CommandArguments);
-            Assert.AreEqual("$?", syntax.ReturnCodeCommand);
-            Assert.AreEqual("-test \"\\\"test\\\"\" $something", syntax.BuildCommand(new[] { "-test", "\"test\"", "$something" }));
-        }
+        Assert.AreEqual("/bin/sh", syntax.CommandName);
+        Assert.AreEqual("-c \"{0}\"", syntax.CommandArguments);
+        Assert.AreEqual("$?", syntax.ReturnCodeCommand);
+        Assert.AreEqual("-test \"\\\"test\\\"\" $something", syntax.BuildCommand(new[] { "-test", "\"test\"", "$something" }));
+    }
 
-        [TestMethod]
-        public void WindowsCmdShouldMatchParams()
-        {
-            var syntax = new WindowsCmdSyntax();
+    [TestMethod]
+    public void WindowsCmdShouldMatchParams()
+    {
+        var syntax = new WindowsCmdSyntax();
 
-            Assert.AreEqual("cmd.exe", syntax.CommandName);
-            Assert.AreEqual("/C {0}", syntax.CommandArguments);
-            Assert.AreEqual("%errorlevel%", syntax.ReturnCodeCommand);
-            Assert.AreEqual("-test \"\\\"test\\\"\" $something", syntax.BuildCommand(new[] { "-test", "\"test\"", "$something" }));
-        }
+        Assert.AreEqual("cmd.exe", syntax.CommandName);
+        Assert.AreEqual("/C {0}", syntax.CommandArguments);
+        Assert.AreEqual("%errorlevel%", syntax.ReturnCodeCommand);
+        Assert.AreEqual("-test \"\\\"test\\\"\" $something", syntax.BuildCommand(new[] { "-test", "\"test\"", "$something" }));
     }
 }

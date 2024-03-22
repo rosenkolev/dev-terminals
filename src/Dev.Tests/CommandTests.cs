@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
+using Dev.Terminals;
 using Dev.Terminals.Commands;
 using Dev.Terminals.Loggers.Abstraction;
 
@@ -47,6 +44,22 @@ public class CommandTests
         Assert.AreEqual(0, command.ExitCode);
         Assert.AreEqual("MyTestString", command.TextOutput);
         Assert.AreEqual("cmd.exe", command.Process.StartInfo.FileName);
+    }
+
+    [TestMethod]
+    public void Command_ShouldDisposeWhenRunning()
+    {
+        var syntax = Shells.DefaultTerminalSyntax;
+        var command = Command.CreateAndStart(
+              commandPath: syntax.CommandName,
+              arguments: string.Format(syntax.CommandArguments, "ping localhost"),
+              workingDirectory: null,
+              outputLogLevel: LogLevel.Debug
+        );
+
+        Assert.IsTrue(command.IsRunning);
+        command.Dispose();
+        Assert.IsFalse(command.IsRunning);
     }
 
     [TestMethod]

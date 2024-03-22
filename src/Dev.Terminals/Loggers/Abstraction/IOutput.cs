@@ -3,6 +3,8 @@
 /// <summary>A logger output.</summary>
 public interface IOutput
 {
+    bool Enabled { get; }
+
     /// <summary>Writes an empty new line.</summary>
     void WriteLine();
 
